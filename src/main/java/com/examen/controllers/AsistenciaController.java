@@ -1,11 +1,14 @@
 package com.examen.controllers;
 
 import com.examen.controllers.dto.AsistenciaDTO;
+import com.examen.controllers.dto.AsistenciaDocenteDTO;
 import com.examen.controllers.dto.AsistenciaHorarioDTO;
 import com.examen.controllers.dto.HorarioDTO;
 import com.examen.entity.Asistencia;
+import com.examen.entity.CargaHoraria;
 import com.examen.entity.Horario;
 import com.examen.service.IAsistenciaService;
+import com.examen.service.ICargaHorariaService;
 import com.examen.service.IHorarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +28,9 @@ public class AsistenciaController {
 
     @Autowired
     private IHorarioService horarioService;
+
+    @Autowired
+    private ICargaHorariaService cargaHorariaService;
 
     @GetMapping("/find/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id){
@@ -51,21 +58,48 @@ public class AsistenciaController {
 
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll(){
-        List<AsistenciaDTO> asistenciaDTOS = asistenciaService.findAll().
-                stream().map(asistencia -> AsistenciaDTO.builder()
+//        List<AsistenciaDTO> asistenciaDTOS = asistenciaService.findAll().
+//                stream().map(asistencia -> AsistenciaDTO.builder()
+//                        .id(asistencia.getId())
+//                        .fecha(asistencia.getFecha())
+//                        .hora(asistencia.getHora())
+//                        .estado(asistencia.getEstado())
+//                        .observacion(asistencia.getObservacion())
+//                        .horario(HorarioDTO.builder()
+//                                .id(asistencia.getHorario().getId())
+//                                .dia(asistencia.getHorario().getDia())
+//                                .horaInicio(asistencia.getHorario().getHoraInicio())
+//                                .horaFin(asistencia.getHorario().getHoraFin())
+//                                .build())
+//                        .build()
+//                ).toList();
+
+
+        List<AsistenciaDocenteDTO> asistenciaDTOS = new ArrayList<>();
+        List<Asistencia> asistencias = asistenciaService.findAll();
+        for(Asistencia asistencia : asistencias){
+            Optional<CargaHoraria> cargaHorariaOptional = cargaHorariaService.findByGrupoAndMateria(asistencia.getHorario().getGrupo(),asistencia.getHorario().getMateria());
+            if(cargaHorariaOptional.isPresent()){
+                CargaHoraria cargaHoraria = cargaHorariaOptional.get();
+                AsistenciaDocenteDTO asistenciaDocenteDTO = AsistenciaDocenteDTO.builder()
                         .id(asistencia.getId())
+                        .estado(asistencia.getEstado())
                         .fecha(asistencia.getFecha())
                         .hora(asistencia.getHora())
-                        .estado(asistencia.getEstado())
                         .observacion(asistencia.getObservacion())
+                        .nombre(cargaHoraria.getDocente().getNombre())
+                        .apellido(cargaHoraria.getDocente().getApellidoP())
                         .horario(HorarioDTO.builder()
                                 .id(asistencia.getHorario().getId())
                                 .dia(asistencia.getHorario().getDia())
                                 .horaInicio(asistencia.getHorario().getHoraInicio())
                                 .horaFin(asistencia.getHorario().getHoraFin())
                                 .build())
-                        .build()
-                ).toList();
+                        .build();
+                asistenciaDTOS.add(asistenciaDocenteDTO);
+            }
+        }
+
         return ResponseEntity.ok(asistenciaDTOS);
     }
 
@@ -89,6 +123,7 @@ public class AsistenciaController {
                             .aula(asistencia.getHorario().getAula().getNumero())
                             .modulo(asistencia.getHorario().getAula().getModulo().getNombre())
                             .horaFin(asistencia.getHorario().getHoraFin())
+                            .horarioId(asistencia.getHorario().getId())
                             .build()
                     ).toList();
             return ResponseEntity.ok(asistenciaDTOS);

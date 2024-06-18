@@ -11,17 +11,14 @@ import java.util.Date;
 @Setter
 @Builder
 @Data
-public class AsistenciaHorarioDTO {
+
+public class AsistenciaDocenteDTO {
     private Long id;
     private char estado;
     private Date fecha;
     private LocalTime hora;
     private String observacion;
-    private String dia;
-    private String aula;
-    private String modulo;
-    private LocalTime horaInicio;
-    private LocalTime horaFin;
-    private Long horarioId;
+    private String nombre;
+    private String apellido;
     private HorarioDTO horario;
 }

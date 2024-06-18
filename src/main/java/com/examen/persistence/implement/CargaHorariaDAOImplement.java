@@ -1,8 +1,6 @@
 package com.examen.persistence.implement;
 
-import com.examen.entity.Aula;
-import com.examen.entity.CargaHoraria;
-import com.examen.entity.Docente;
+import com.examen.entity.*;
 import com.examen.persistence.IAulaDAO;
 import com.examen.persistence.ICargaHorariaDAO;
 import com.examen.repository.AulaRepository;
@@ -33,6 +31,11 @@ public class CargaHorariaDAOImplement implements ICargaHorariaDAO {
     @Override
     public Optional<CargaHoraria> findById(Long id) {
         return cargaHorariaRepository.findById(id);
+    }
+
+    @Override
+    public Optional<CargaHoraria> findByGrupoAndMateria(Grupo grupo, Materia materia) {
+        return cargaHorariaRepository.findByGrupoAndMateria(grupo, materia);
     }
 
     @Override
